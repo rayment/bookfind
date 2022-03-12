@@ -247,9 +247,13 @@ def output_results(parser):
 
 try:
 	isbn = sanitise_isbn(args.isbn)
-	if (len(isbn) != 10 and len(isbn) != 13) or not check_isbn(isbn):
+	if (len(isbn) != 9 and len(isbn) != 10 and len(isbn) != 13) or \
+	   not check_isbn(isbn):
 		print('error: not a valid SBN, ISBN-10 or ISBN-13 number')
 		exit(1)
+	if len(isbn) == 9:
+		# convert SBN to ISBN-10
+		isbn = '0' + isbn
 	currency = args.currency
 	if currency is None:
 		currency = DEFAULT_CURRENCY
