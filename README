@@ -1,0 +1,36 @@
+bookfind - Find books at the best price
+
+---------------------------------------------------
+
+bookfind is a simple Python script that naively scrapes the results from queries
+to bookfinder.com for the best book prices either new or used, when provided
+with a valid SBN, ISBN-10 or ISBN-13 number.
+
+Keep in mind that this script is limited to the database provided by
+bookfinder.com and thus there are possibly many entries that do not exist or are
+not accurate.
+
+bookfinder.com provides their service free of charge, so please be appreciative
+and do not spam this script.
+
+Note: You will need Python 3 to run this. No additional libraries other than
+the built-in urllib and html.parser are required.
+
+bookfind is licensed under BSD 3-Clause.
+All license information is available in the included COPYING file.
+
+usage: bookfind.py [-h] [-v] [-c [CURRENCY]] [-n] [-u] isbn
+
+Find books at the best price
+
+positional arguments:
+  isbn                  SBN, ISBN-10 or ISBN-13 number to search
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -c [CURRENCY], --currency [CURRENCY]
+                        3 letter currency symbol (default: EUR)
+  -n, --new             Search for new books (default)
+  -u, --used            Search for used books
+
