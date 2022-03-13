@@ -27,8 +27,11 @@ argp.add_argument('-v', '--version',
                   version='%(prog)s {}'.format(VERSION))
 argp.add_argument('-c', '--currency',
                   help='3 letter currency symbol (default: EUR)',
-                  nargs='?',
                   type=str)
+argp.add_argument('-l', '--limit',
+                  help='limit the number of results',
+                  default=0,
+                  type=int)
 argp.add_argument('-n', '--new',
                   help='Search for new books (default)',
                   action='store_true')
@@ -213,29 +216,15 @@ def output_results(parser):
 	publisher  = parser.extract_publisher()
 	edition    = parser.extract_edition()
 	language   = parser.extract_language()
-	books_new  = parser.extract_new()
-	books_used = parser.extract_used()
-	print_align('Tile', title, color='\033[93m')
-	print_align('Publisher', publisher, color='\033[93m')
-	print_align('Edition', edition, color='\033[93m')
-	print_align('Language', language, color='\033[93m')
+	books_new  = reversed(sorted(parser.extract_new(), key=lambda d:d['price']))
+	books_used = reversed(sorted(parser.extract_used(),key=lambda d:d['price']))
+	if args.limit > 0:
+		books_new = list(books_new)[:args.limit]
+		books_used = list(books_used)[:args.limit]
 	if title is None:
 		print('error: no book could be found')
 		exit(1)
-	if args.new is True or args.used is False:
-		print()
-		print('\033[92mNew books\033[00m')
-		print()
-		for book in books_new:
-			print('-' * (LINE_LEN // 2))
-			print('\033[91mPrice\033[00m :', book['price'])
-			print_align('Date', book['date'], gap=4)
-			print_align('Description', book['desc'], gap=4)
-			print_align('URL', book['url'], gap=4)
-			print()
 	if args.used:
-		print()
-		print('\033[92mUsed books\033[00m')
 		print()
 		for book in books_used:
 			print('-' * (LINE_LEN // 2))
@@ -244,6 +233,22 @@ def output_results(parser):
 			print_align('Description', book['desc'], gap=4)
 			print_align('URL', book['url'], gap=4)
 			print()
+		print('\033[92mUsed books\033[00m')
+	if args.new is True or args.used is False:
+		print()
+		for book in books_new:
+			print('-' * (LINE_LEN // 2))
+			print('\033[91mPrice\033[00m :', book['price'])
+			print_align('Date', book['date'], gap=4)
+			print_align('Description', book['desc'], gap=4)
+			print_align('URL', book['url'], gap=4)
+			print()
+		print('\033[92mNew books\033[00m')
+	print()
+	print_align('Tile', title, color='\033[93m')
+	print_align('Publisher', publisher, color='\033[93m')
+	print_align('Edition', edition, color='\033[93m')
+	print_align('Language', language, color='\033[93m')
 
 try:
 	isbn = sanitise_isbn(args.isbn)
