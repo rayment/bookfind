@@ -260,7 +260,11 @@ try:
 	else:
 		currency = currency.upper()
 	data = fetch_book(isbn, currency)
-	htmldata = data.read().decode('UTF-8')
+	htmldata = data.read()
+	try:
+		htmldata = htmldata.decode('windows-1252')
+	except Exception:
+		htmldata = htmldata.decode('UTF-8')
 	parser = BookHTMLParser()
 	parser.feed(htmldata)
 	output_results(parser)
