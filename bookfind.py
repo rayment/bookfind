@@ -216,11 +216,13 @@ def output_results(parser):
 	publisher  = parser.extract_publisher()
 	edition    = parser.extract_edition()
 	language   = parser.extract_language()
-	books_new  = reversed(sorted(parser.extract_new(), key=lambda d:d['price']))
-	books_used = reversed(sorted(parser.extract_used(),key=lambda d:d['price']))
+	books_new  = sorted(parser.extract_new(), key=lambda d:d['price'])
+	books_used = sorted(parser.extract_used(),key=lambda d:d['price'])
 	if args.limit > 0:
-		books_new = list(books_new)[:args.limit]
-		books_used = list(books_used)[:args.limit]
+		books_new = books_new[:args.limit]
+		books_used = books_used[:args.limit]
+	books_new.reverse()
+	books_used.reverse()
 	if title is None:
 		print('error: no book could be found')
 		exit(1)
