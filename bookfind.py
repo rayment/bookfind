@@ -26,17 +26,19 @@ argp.add_argument('-v', '--version',
                   action='version',
                   version='%(prog)s {}'.format(VERSION))
 argp.add_argument('-c', '--currency',
+                  metavar='sym',
                   help='3 letter currency symbol (default: EUR)',
                   type=str)
 argp.add_argument('-l', '--limit',
+                  metavar='num',
                   help='limit the number of results',
                   default=0,
                   type=int)
 argp.add_argument('-n', '--new',
-                  help='Search for new books (default)',
+                  help='search for new books (default)',
                   action='store_true')
 argp.add_argument('-u', '--used',
-                  help='Search for used books',
+                  help='search for used books',
                   action='store_true')
 argp.add_argument('isbn',
                   help='SBN, ISBN-10 or ISBN-13 number to search',
