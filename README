@@ -19,7 +19,7 @@ the built-in urllib and html.parser are required.
 bookfind is licensed under BSD 3-Clause.
 All license information is available in the included COPYING file.
 
-usage: bookfind.py [-h] [-v] [-c sym] [-l num] [-n] [-u] isbn
+usage: bookfind [-h] [-v] [-c sym] [-d sym] [-l num] [-n] [-u] isbn
 
 Find books at the best price
 
@@ -31,6 +31,8 @@ optional arguments:
   -v, --version         show program's version number and exit
   -c sym, --currency sym
                         3 letter currency symbol (default: EUR)
+  -d sym, --destination sym
+                        2 letter country-code (default: FR)
   -l num, --limit num   limit the number of results
   -n, --new             search for new books (default)
   -u, --used            search for used books

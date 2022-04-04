@@ -16,10 +16,11 @@ import urllib.request
 
 API_URL = 'https://bookfinder.com/search/'
 DEFAULT_CURRENCY = 'EUR'
+DEFAULT_DESTINATION = 'fr'
 JUSTIFY = 11
 LINE_LEN = 80 # chars per line
 
-VERSION = '1.0.0' # make sure to update on version change
+VERSION = '1.1.0' # make sure to update on version change
 
 argp = argparse.ArgumentParser(description='Find books at the best price')
 argp.add_argument('-v', '--version',
@@ -28,6 +29,10 @@ argp.add_argument('-v', '--version',
 argp.add_argument('-c', '--currency',
                   metavar='sym',
                   help='3 letter currency symbol (default: EUR)',
+                  type=str)
+argp.add_argument('-d', '--destination',
+                  metavar='sym',
+                  help='2 letter country-code (default: FR)',
                   type=str)
 argp.add_argument('-l', '--limit',
                   metavar='num',
@@ -68,15 +73,15 @@ def check_isbn(isbn):
 	else:
 		return False
 
-def form_url(isbn, currency):
+def form_url(isbn, currency, destination):
 	# encode the url properly
 	isbn = urllib.parse.quote(isbn)
 	currency = urllib.parse.quote(currency)
 	return API_URL + '?keywords=' + isbn + '&currency=' + currency + \
-	       '&lang=en&st=sh&ac=qr&submit='
+	       '&destination=' + destination + '&lang=en&st=sh&ac=qr&submit='
 
-def fetch_book(isbn, currency):
-	url = form_url(isbn, currency)
+def fetch_book(isbn, currency, destination):
+	url = form_url(isbn, currency, destination)
 	data = urllib.request.urlopen(url)
 	return data
 
@@ -264,11 +269,16 @@ try:
 		# convert SBN to ISBN-10
 		isbn = '0' + isbn
 	currency = args.currency
+	destination = args.destination
 	if currency is None:
 		currency = DEFAULT_CURRENCY
 	else:
 		currency = currency.upper()
-	data = fetch_book(isbn, currency)
+	if destination is None:
+		destination = DEFAULT_DESTINATION
+	else:
+		destination = destination.lower()
+	data = fetch_book(isbn, currency, destination)
 	htmldata = data.read()
 	try:
 		htmldata = htmldata.decode('windows-1252')
