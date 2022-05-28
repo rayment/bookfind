@@ -20,7 +20,7 @@ DEFAULT_DESTINATION = 'fr'
 JUSTIFY = 11
 LINE_LEN = 80 # chars per line
 
-VERSION = '1.1.0' # make sure to update on version change
+VERSION = '1.1.1' # make sure to update on version change
 
 argp = argparse.ArgumentParser(description='Find books at the best price')
 argp.add_argument('-v', '--version',
