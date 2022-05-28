@@ -184,6 +184,16 @@ class BookHTMLParser(HTMLParser):
 			if attrib[0] == 'class' and attrib[1] == 'item-note':
 				self.data_fetch = DATA_DESCRIPTION
 
+	def money_strip(self, price_str):
+		stripped = ''
+		dot = False
+		for c in price_str:
+			if c.isdigit() or (not dot and c == '.'):
+				stripped += c
+				if c == '.':
+					dot = True
+		return stripped
+
 	def handle_data(self, data):
 		data = data.strip()
 		#if self.data_fetch != DATA_NONE:
@@ -196,6 +206,7 @@ class BookHTMLParser(HTMLParser):
 			self.entry['desc'] += [str(data)]
 		elif self.data_fetch == DATA_PRICE:
 			self.entry['price'] = str(data)
+			self.entry['price_raw'] = float(self.money_strip(str(data)))
 		elif self.desc_fetch == DESC_PUBLISHER:
 			self.publisher = str(data)
 		elif self.desc_fetch == DESC_EDITION:
@@ -223,8 +234,8 @@ def output_results(parser):
 	publisher  = parser.extract_publisher()
 	edition    = parser.extract_edition()
 	language   = parser.extract_language()
-	books_new  = sorted(parser.extract_new(), key=lambda d:d['price'])
-	books_used = sorted(parser.extract_used(),key=lambda d:d['price'])
+	books_new  = sorted(parser.extract_new(), key=lambda d:d['price_raw'])
+	books_used = sorted(parser.extract_used(),key=lambda d:d['price_raw'])
 	if args.limit > 0:
 		books_new = books_new[:args.limit]
 		books_used = books_used[:args.limit]
