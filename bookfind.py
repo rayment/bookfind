@@ -9,6 +9,7 @@
 
 import argparse
 import copy
+import csv
 from html.parser import HTMLParser
 from sys import exit
 import urllib.parse
@@ -20,7 +21,7 @@ DEFAULT_DESTINATION = 'fr'
 JUSTIFY = 11
 LINE_LEN = 80 # chars per line
 
-VERSION = '1.1.1' # make sure to update on version change
+VERSION = '1.2.0' # make sure to update on version change
 
 argp = argparse.ArgumentParser(description='Find books at the best price')
 argp.add_argument('-v', '--version',
@@ -39,6 +40,10 @@ argp.add_argument('-l', '--limit',
                   help='limit the number of results',
                   default=0,
                   type=int)
+argp.add_argument('-o', '--output',
+                  metavar='file',
+                  help='output results to a CSV file',
+                  type=str)
 argp.add_argument('-n', '--new',
                   help='search for new books (default)',
                   action='store_true')
@@ -229,7 +234,7 @@ def print_align(header, data, color=None, gap=0, just=0):
 		else:
 			print(gapalign + align + '  ', i.strip())
 
-def output_results(parser):
+def output_results(parser, isbn, filename):
 	title      = parser.extract_title()
 	publisher  = parser.extract_publisher()
 	edition    = parser.extract_edition()
@@ -239,36 +244,65 @@ def output_results(parser):
 	if args.limit > 0:
 		books_new = books_new[:args.limit]
 		books_used = books_used[:args.limit]
-	books_new.reverse()
-	books_used.reverse()
+	if filename is None:
+		# books are printed from most expensive to cheapest
+		books_new.reverse()
+		books_used.reverse()
 	if title is None:
 		print('error: no book could be found')
 		exit(1)
-	if args.used:
-		print()
-		for book in books_used:
-			print('-' * (LINE_LEN // 2))
-			print('\033[91mPrice\033[00m :', book['price'])
-			print_align('Date', book['date'], gap=4)
-			print_align('Description', book['desc'], gap=4)
-			print_align('URL', book['url'], gap=4)
-			print()
-		print('\033[92mUsed books\033[00m')
-	if args.new is True or args.used is False:
-		print()
+	if filename is not None:
+		# we're dumping to csv - remove unnecessary columns and add others
 		for book in books_new:
-			print('-' * (LINE_LEN // 2))
-			print('\033[91mPrice\033[00m :', book['price'])
-			print_align('Date', book['date'], gap=4)
-			print_align('Description', book['desc'], gap=4)
-			print_align('URL', book['url'], gap=4)
+			book.pop('desc')
+			book.pop('price')
+			book.pop('date')
+			book['isbn'] = isbn
+			book['condition'] = 'new'
+		for book in books_used:
+			book.pop('desc')
+			book.pop('price')
+			book.pop('date')
+			book['isbn'] = isbn
+			book['condition'] = 'used'
+		with open(filename, 'w') as f:
+			w = csv.writer(f)
+			if len(books_new) > 0:
+				w.writerow(books_new[0])
+			else:
+				w.writerow(books_used[0])
+			if args.new is True or args.used is False:
+				for book in books_new:
+					w.writerow(book.values())
+			if args.used:
+				for book in books_used:
+					w.writerow(book.values())
+	else:
+		if args.used:
 			print()
-		print('\033[92mNew books\033[00m')
-	print()
-	print_align('Tile', title, color='\033[93m')
-	print_align('Publisher', publisher, color='\033[93m')
-	print_align('Edition', edition, color='\033[93m')
-	print_align('Language', language, color='\033[93m')
+			for book in books_used:
+				print('-' * (LINE_LEN // 2))
+				print('\033[91mPrice\033[00m :', book['price'])
+				print_align('Date', book['date'], gap=4)
+				print_align('Description', book['desc'], gap=4)
+				print_align('URL', book['url'], gap=4)
+				print()
+			print('\033[92mUsed books\033[00m')
+		if args.new is True or args.used is False:
+			print()
+			for book in books_new:
+				print('-' * (LINE_LEN // 2))
+				print('\033[91mPrice\033[00m :', book['price'])
+				print_align('Date', book['date'], gap=4)
+				print_align('Description', book['desc'], gap=4)
+				print_align('URL', book['url'], gap=4)
+				print()
+			print('\033[92mNew books\033[00m')
+		print()
+		print_align('Tile', title, color='\033[93m')
+		print_align('Publisher', publisher, color='\033[93m')
+		print_align('Edition', edition, color='\033[93m')
+		print_align('Language', language, color='\033[93m')
 
 try:
 	isbn = sanitise_isbn(args.isbn)
@@ -289,6 +323,8 @@ try:
 		destination = DEFAULT_DESTINATION
 	else:
 		destination = destination.lower()
+	if args.output is not None:
+		print('fetching and saving to CSV - this may take some time...')
 	data = fetch_book(isbn, currency, destination)
 	htmldata = data.read()
 	try:
@@ -297,7 +333,7 @@ try:
 		htmldata = htmldata.decode('UTF-8')
 	parser = BookHTMLParser()
 	parser.feed(htmldata)
-	output_results(parser)
+	output_results(parser, isbn, args.output)
 except urllib.error.URLError as e:
 	err = str(e)
 	print('error: unable to fetch entry')
